@@ -45,11 +45,11 @@ public class Lox {
         // Por enquanto, apenas imprimimos os tokens (ou o código fonte)
         // Aqui você chamará seu Scanner
         System.out.println("Executing source: " + source);
-        // Scanner scanner = new Scanner(source);
-        // List<Token> tokens = scanner.scanTokens();
+         Scanner scanner = new Scanner(source);
+         List<Token> tokens = scanner.scanTokens();
         // // For now, just print the tokens.
-        // for (Token token : tokens) {
-        //     System.out.println(token);
+         for (Token token : tokens) {
+            System.out.println(token);
         // }
     }
 
