@@ -44,6 +44,7 @@ class Scanner {
          switch (c) {
                  case '(': addToken(LEFT_PAREN); break;
             case ')': addToken(RIGHT_PAREN); break;
+                 case '"': string(); break;
             // ... outros casos de um caractere
             case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
             case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
@@ -75,4 +76,21 @@ class Scanner {
     }
 
     // Métodos auxiliares: isAtEnd, advance, addToken, match, peek...
+    // Novo método auxiliar:
+private void string() {
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') line++;
+        advance();
+    }
+
+    if (isAtEnd()) {
+        Lox.error(line, "Unterminated string.");
+        return;
+    }
+
+    advance(); // O '"' de fechamento.
+
+    String value = source.substring(start + 1, current - 1);
+    addToken(STRING, value);
+}
 }
