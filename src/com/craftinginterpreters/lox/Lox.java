@@ -21,25 +21,16 @@ public class Lox {
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes)); // Converte bytes para String
-
-        // Indicate an error in the exit code.
+        run(new String(bytes, Charset.defaultCharset()));
         if (hadError) System.exit(65);
     }
-
-    private static void runPrompt() throws IOException {
-        // Implementação do modo interativo (REPL)
-        // Pode ser deixado para depois, se o foco é o scanner de arquivo
-        Scanner input = new Scanner(System.in);
-        for (;;) {
-            System.out.print("> ");
-            String line = input.nextLine();
-            if (line == null || line.equals("exit")) break; // Adicionado "exit" para sair
-            run(line);
-            hadError = false; // Reset error para o modo interativo
-        }
-        input.close();
+    // runPrompt() ...
+    private static void run(String source) {
+        // Por enquanto, apenas imprimimos o código fonte
+        System.out.println("Executing source: " + source);
+        // O Scanner será chamado aqui futuramente
     }
+
 
     private static void run(String source) {
         // Por enquanto, apenas imprimimos os tokens (ou o código fonte)
@@ -53,13 +44,12 @@ public class Lox {
         // }
     }
 
-    static void error(int line, String message) {
+      static void error(int line, String message) {
         report(line, "", message);
     }
 
     private static void report(int line, String where, String message) {
-        System.err.println(
-            "[line " + line + "] Error" + where + ": " + message);
+        System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
     }
 }
