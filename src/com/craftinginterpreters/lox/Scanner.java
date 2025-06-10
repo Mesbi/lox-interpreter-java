@@ -70,12 +70,13 @@ class Scanner {
                 break;
 
             default:
-    if (isDigit(c)) {
-        number();
-    } else {
-        Lox.error(line, "Unexpected character.");
-    }
-    break;
+   if (isDigit(c)) {
+    number();
+} else if (isAlpha(c)) {
+    identifier();
+} else {
+    Lox.error(line, "Unexpected character.");
+}
         }
     }
 
@@ -116,5 +117,35 @@ private boolean isDigit(char c) {
 private char peekNext() {
     if (current + 1 >= source.length()) return '\0';
     return source.charAt(current + 1);
+}
+    private void identifier() {
+    while (isAlphaNumeric(peek())) advance();
+
+    String text = source.substring(start, current);
+    TokenType type = keywords.get(text);
+    if (type == null) type = IDENTIFIER;
+    addToken(type);
+}
+
+private boolean isAlpha(char c) {
+    return (c >= 'a' && c <= 'z') ||
+           (c >= 'A' && c <= 'Z') ||
+            c == '_';
+}
+
+private boolean isAlphaNumeric(char c) {
+    return isAlpha(c) || isDigit(c);
+}
+
+    // Adiciona o mapa de palavras-chave no início da classe
+private static final Map<String, TokenType> keywords;
+
+static {
+    keywords = new HashMap<>();
+    keywords.put("and",    AND);
+    keywords.put("class",  CLASS);
+    // ... todas as outras palavras-chave
+    keywords.put("var",    VAR);
+    keywords.put("while",  WHILE);
 }
 }
