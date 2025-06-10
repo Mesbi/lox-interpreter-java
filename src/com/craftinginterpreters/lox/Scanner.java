@@ -70,8 +70,12 @@ class Scanner {
                 break;
 
             default:
-                Lox.error(line, "Unexpected character.");
-                break;
+    if (isDigit(c)) {
+        number();
+    } else {
+        Lox.error(line, "Unexpected character.");
+    }
+    break;
         }
     }
 
@@ -92,5 +96,25 @@ private void string() {
 
     String value = source.substring(start + 1, current - 1);
     addToken(STRING, value);
+}
+    private void number() {
+    while (isDigit(peek())) advance();
+
+    // Procura pela parte fracionária.
+    if (peek() == '.' && isDigit(peekNext())) {
+        advance(); // Consome o "."
+        while (isDigit(peek())) advance();
+    }
+
+    addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+}
+
+private boolean isDigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+private char peekNext() {
+    if (current + 1 >= source.length()) return '\0';
+    return source.charAt(current + 1);
 }
 }
