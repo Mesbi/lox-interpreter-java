@@ -36,25 +36,43 @@ class Scanner {
         return tokens;
     }
 
-    // Verifica se chegamos ao fim do código fonte
-    private boolean isAtEnd() {
-        return current >= source.length();
-    }
+    
 
     // Método principal que será expandido nas próximas seções (4.5 em diante)
     private void scanToken() {
-        // char c = advance(); // Função advance() será definida em 4.5.1
-        // switch (c) {
-        //     // Casos para cada tipo de token...
-        // }
-        // Por enquanto, para passar desta etapa e testar a estrutura:
-        System.out.println("Scanning token starting at: " + source.substring(start, current+1 > source.length() ? source.length() : current+1));
-        // Você precisará implementar a lógica de reconhecimento de tokens aqui,
-        // começando com `advance()` e os `switch` cases nas próximas seções do livro.
-        // Por ora, você pode apenas avançar para testar o loop.
-        if (current < source.length()) current++; // Simplesmente avança para evitar loop infinito nesta fase inicial
+         char c = advance(); // Função advance() será definida em 4.5.1
+         switch (c) {
+                 case '(': addToken(LEFT_PAREN); break;
+            case ')': addToken(RIGHT_PAREN); break;
+            // ... outros casos de um caractere
+            case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
+            case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
+            // ... outros casos de um ou dois caracteres
+
+            case '/':
+                if (match('/')) {
+                    // Um comentário vai até o fim da linha.
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    addToken(SLASH);
+                }
+                break;
+
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignora espaços em branco.
+                break;
+
+            case '\n':
+                line++;
+                break;
+
+            default:
+                Lox.error(line, "Unexpected character.");
+                break;
+        }
     }
 
-    // Outros métodos auxiliares como advance(), addToken(), match(), peek(), etc.,
-    // serão introduzidos a partir da seção 4.5.1.
+    // Métodos auxiliares: isAtEnd, advance, addToken, match, peek...
 }
