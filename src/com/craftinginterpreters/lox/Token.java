@@ -13,7 +13,7 @@ class Token {
         this.line = line;
     }
 
-    public String toString() {
-        return type + " " + lexeme + " " + (literal != null ? literal : "");
+  public String toString() {
+        return type + " " + lexeme + " " + literal;
     }
 }
