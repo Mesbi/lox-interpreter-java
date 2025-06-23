@@ -41,7 +41,15 @@ private Expr primary() {
 
     throw error(peek(), "Expect expression.");
 }
-
+    // 
+private Expr unary() {
+    if (match(BANG, MINUS)) {
+        Token operator = previous();
+        Expr right = unary(); // Chamada recursiva para unários aninhados (ex: --!!true)
+        return new Expr.Unary(operator, right);
+    }
+    return primary();
+}
     // --- MÉTODOS AUXILIARES ---
 
     // Verifica se o token atual corresponde a algum dos tipos dados. Se sim, consome o token.
