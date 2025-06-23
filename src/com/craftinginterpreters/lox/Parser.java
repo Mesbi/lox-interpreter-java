@@ -50,6 +50,49 @@ private Expr unary() {
     }
     return primary();
 }
+    //
+private Expr factor() {
+    Expr expr = unary(); // Pega a expressão à esquerda (de maior precedência)
+
+    while (match(SLASH, STAR)) { // Enquanto encontrar operadores '*' ou '/'
+        Token operator = previous();
+        Expr right = unary();
+        expr = new Expr.Binary(expr, operator, right); // Agrupa com o 'expr' anterior
+    }
+
+    return expr;
+}
+
+private Expr term() {
+    Expr expr = factor();
+    while (match(MINUS, PLUS)) {
+        Token operator = previous();
+        Expr right = factor();
+        expr = new Expr.Binary(expr, operator, right);
+    }
+    return expr;
+}
+
+private Expr comparison() {
+    Expr expr = term();
+    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+        Token operator = previous();
+        Expr right = term();
+        expr = new Expr.Binary(expr, operator, right);
+    }
+    return expr;
+}
+
+private Expr equality() {
+    Expr expr = comparison();
+    while (match(BANG_EQUAL, EQUAL_EQUAL)) {
+        Token operator = previous();
+        Expr right = comparison();
+        expr = new Expr.Binary(expr, operator, right);
+    }
+    return expr;
+}
+    
     // --- MÉTODOS AUXILIARES ---
 
     // Verifica se o token atual corresponde a algum dos tipos dados. Se sim, consome o token.
