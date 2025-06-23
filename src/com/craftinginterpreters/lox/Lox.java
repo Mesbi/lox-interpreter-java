@@ -58,9 +58,16 @@ public class Lox {
         // }
     }
 
-      static void error(int line, String message) {
-        report(line, "", message);
+static void error(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+        // Caso especial: o erro aconteceu no final do arquivo.
+        report(token.line, " at end", message);
+    } else {
+        // Caso comum: o erro está em um token específico.
+        // Nós usamos o 'lexeme' do token para mostrar exatamente qual é.
+        report(token.line, " at '" + token.lexeme + "'", message);
     }
+}
 
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
