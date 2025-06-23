@@ -92,6 +92,10 @@ private Expr equality() {
     }
     return expr;
 }
+    //
+private Expr expression() {
+    return equality();
+}
     
     // --- MÉTODOS AUXILIARES ---
 
