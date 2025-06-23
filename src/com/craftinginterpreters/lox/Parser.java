@@ -18,7 +18,7 @@ class Parser {
         try {
             return expression();
         } catch (ParseError error) {
-            return null; // Retorna null se encontrar um erro de sintaxe.
+            return null; // A sincronização (se quiséssemos analisar múltiplos statements) seria chamada aqui.
         }
     }
 
@@ -98,7 +98,38 @@ private Expr expression() {
 }
     
     // --- MÉTODOS AUXILIARES ---
+private Token consume(TokenType type, String message) {
+    if (check(type)) return advance();
+    throw error(peek(), message);
+}
 
+private ParseError error(Token token, String message) {
+    Lox.error(token, message); // Usa o método de erro que já tínhamos
+    return new ParseError();
+}
+
+// Descarta tokens até encontrar um ponto seguro para recomeçar a análise
+private void synchronize() {
+    advance();
+
+    while (!isAtEnd()) {
+        if (previous().type == SEMICOLON) return;
+
+        switch (peek().type) {
+            case CLASS:
+            case FUN:
+            case VAR:
+            case FOR:
+            case IF:
+            case WHILE:
+            case PRINT:
+            case RETURN:
+                return;
+        }
+
+        advance();
+    }
+}
     // Verifica se o token atual corresponde a algum dos tipos dados. Se sim, consome o token.
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
