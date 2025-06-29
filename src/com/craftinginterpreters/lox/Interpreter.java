@@ -34,4 +34,17 @@ class Interpreter implements Expr.Visitor<Object> {
     }
 
     // OS MÉTODOS 'visit...' VÊM AQUI...
+    // Adicione à classe Interpreter
+
+@Override
+public Object visitLiteralExpr(Expr.Literal expr) {
+    // O valor de um literal é o próprio literal.
+    return expr.value;
+}
+
+@Override
+public Object visitGroupingExpr(Expr.Grouping expr) {
+    // O valor de um agrupamento é o valor da expressão dentro dele.
+    return evaluate(expr.expression);
+}
 }
