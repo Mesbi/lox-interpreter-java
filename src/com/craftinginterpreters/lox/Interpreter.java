@@ -34,7 +34,6 @@ class Interpreter implements Expr.Visitor<Object> {
     }
 
     // OS MÉTODOS 'visit...' VÊM AQUI...
-    // Adicione à classe Interpreter
 
 @Override
 public Object visitLiteralExpr(Expr.Literal expr) {
@@ -47,4 +46,32 @@ public Object visitGroupingExpr(Expr.Grouping expr) {
     // O valor de um agrupamento é o valor da expressão dentro dele.
     return evaluate(expr.expression);
 }
+
+    // Adicione à classe Interpreter
+
+@Override
+public Object visitUnaryExpr(Expr.Unary expr) {
+    // 1. Avalie o operando primeiro.
+    Object right = evaluate(expr.right);
+
+    // 2. Aplique o operador.
+    switch (expr.operator.type) {
+        case BANG:
+            return !isTruthy(right);
+        case MINUS:
+            checkNumberOperand(expr.operator, right);
+            return -(double)right;
+    }
+
+    // Inalcançável.
+    return null;
+}
+
+// Lógica de "verdadeiro" ou "falso" do Lox: nil e false são falsos, todo o resto é verdadeiro.
+private boolean isTruthy(Object object) {
+    if (object == null) return false;
+    if (object instanceof Boolean) return (boolean)object;
+    return true;
+}
+    
 }
