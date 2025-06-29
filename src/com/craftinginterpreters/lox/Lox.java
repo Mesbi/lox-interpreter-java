@@ -9,10 +9,11 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
-static boolean hadRuntimeError = false;
+
 public class Lox {
-        
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -57,8 +58,7 @@ private static void run(String source) {
         // 3. VERIFICAÇÃO DE ERRO: Se o parser encontrou um erro, pare aqui.
         if (hadError) return;
 
-        // 4. "EXECUÇÃO" TEMPORÁRIA: Imprime a árvore para verificarmos se está correta.
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
        // Versão do erro para o Parser
 static void error(Token token, String message) {
@@ -78,9 +78,9 @@ static void error(Token token, String message) {
         hadError = true;
     }
 
-        static void runtimeError(RuntimeError error) {
-    System.err.println(error.getMessage() +
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() +
         "\n[line " + error.token.line + "]");
-    hadRuntimeError = true; 
+        hadRuntimeError = true; 
 }
 }
