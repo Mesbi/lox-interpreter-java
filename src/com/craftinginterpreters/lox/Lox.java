@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
+static boolean hadRuntimeError = false;
 public class Lox {
         
     static boolean hadError = false;
@@ -76,4 +77,10 @@ static void error(Token token, String message) {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
     }
+
+        static void runtimeError(RuntimeError error) {
+    System.err.println(error.getMessage() +
+        "\n[line " + error.token.line + "]");
+    hadRuntimeError = true; 
+}
 }
