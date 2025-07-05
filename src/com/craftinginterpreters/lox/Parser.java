@@ -13,17 +13,104 @@ class Parser {
         this.tokens = tokens;
     }
 
-    // Método principal que inicia a análise
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null; // A sincronização (se quiséssemos analisar múltiplos statements) seria chamada aqui.
-        }
+    // Método principal agora retorna uma lista de declarações
+    public List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+    while (!isAtEnd()) {
+        statements.add(declaration());
+         }
+            return statements; 
+       
+    }
+    //  Novo ponto de entrada que distingue declarações de variáveis de outras.
+    private Stmt declaration() {
+    try {
+        if (match(VAR)) return varDeclaration();
+        return statement();
+    } catch (ParseError error) {
+        synchronize();
+        return null;
+    }
+}
+
+// Método para analisar uma declaração de variável.
+private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expect variable name.");
+    Expr initializer = null;
+    if (match(EQUAL)) {
+        initializer = expression();
+    }
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+}
+
+// Método para analisar outras declarações.
+private Stmt statement() {
+    if (match(IF)) return ifStatement();
+    if (match(PRINT)) return printStatement();
+    if (match(LEFT_BRACE)) return new Stmt.Block(block());
+    return expressionStatement();
+}
+
+// Métodos para cada tipo de declaração.
+private Stmt ifStatement() {
+    consume(LEFT_PAREN, "Expect '(' after 'if'.");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+    Stmt thenBranch = statement();
+    Stmt elseBranch = null;
+    if (match(ELSE)) {
+        elseBranch = statement();
     }
 
-    // MÉTODOS PARA AS REGRAS DA GRAMÁTICA VIRÃO AQUI...
-    // we will start with the lowest level rule
+    return new Stmt.If(condition, thenBranch, elseBranch);
+}
+
+private List<Stmt> block() {
+    List<Stmt> statements = new ArrayList<>();
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+        statements.add(declaration());
+    }
+    consume(RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
+}
+
+private Stmt printStatement() {
+    Expr value = expression();
+    consume(SEMICOLON, "Expect ';' after value.");
+    return new Stmt.Print(value);
+}
+
+private Stmt expressionStatement() {
+    Expr expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression.");
+    return new Stmt.Expression(expr);
+}
+
+// Atualize o método `expression()` para incluir atribuição.
+private Expr expression() {
+    return assignment(); // O novo ponto de entrada para expressões.
+}
+
+// Novo método para analisar atribuições (ex: a = 1).
+private Expr assignment() {
+    Expr expr = equality(); // ou a regra que você tinha antes (equality, comparison, etc.)
+
+    if (match(EQUAL)) {
+        Token equals = previous();
+        Expr value = assignment(); // Permite atribuições encadeadas (a = b = c)
+
+        if (expr instanceof Expr.Variable) {
+            Token name = ((Expr.Variable)expr).name;
+            return new Expr.Assign(name, value);
+        }
+        error(equals, "Invalid assignment target.");
+    }
+    return expr;
+}
+
+// Atualize o `primary()` para reconhecer identificadores como expressões.
 private Expr primary() {
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
@@ -40,7 +127,7 @@ private Expr primary() {
     }
 
     throw error(peek(), "Expect expression.");
-}
+// MÉTODOS PARA AS REGRAS DA GRAMÁTICA VIRÃO AQUI...
     // 
 private Expr unary() {
     if (match(BANG, MINUS)) {
@@ -97,74 +184,16 @@ private Expr expression() {
     return equality();
 }
     
-    // --- MÉTODOS AUXILIARES ---
-private Token consume(TokenType type, String message) {
-    if (check(type)) return advance();
-    throw error(peek(), message);
-}
-
-private ParseError error(Token token, String message) {
-    Lox.error(token, message); // Usa o método de erro que já tínhamos
-    return new ParseError();
-}
-
-// Descarta tokens até encontrar um ponto seguro para recomeçar a análise
-private void synchronize() {
-    advance();
-
-    while (!isAtEnd()) {
-        if (previous().type == SEMICOLON) return;
-
-        switch (peek().type) {
-            case CLASS:
-            case FUN:
-            case VAR:
-            case FOR:
-            case IF:
-            case WHILE:
-            case PRINT:
-            case RETURN:
-                return;
-        }
-
-        advance();
-    }
-}
-    // Verifica se o token atual corresponde a algum dos tipos dados. Se sim, consome o token.
-    private boolean match(TokenType... types) {
-        for (TokenType type : types) {
-            if (check(type)) {
-                advance();
-                return true;
-            }
-        }
-        return false;
+    if (match(IDENTIFIER)) {
+        return new Expr.Variable(previous());
     }
 
-    // Verifica se o token atual é do tipo esperado, mas não o consome.
-    private boolean check(TokenType type) {
-        if (isAtEnd()) return false;
-        return peek().type == type;
-    }
 
-    // Consome o token atual e o retorna.
-    private Token advance() {
-        if (!isAtEnd()) current++;
-        return previous();
-    }
 
-    // Verifica se chegamos ao final da lista de tokens.
-    private boolean isAtEnd() {
-        return peek().type == EOF;
-    }
 
-    // Retorna o token atual sem consumi-lo.
-    private Token peek() {
-        return tokens.get(current);
-    }
 
-    // Retorna o token anterior.
-    private Token previous() {
-        return tokens.get(current - 1);
-    }
-}
+    
+  
+    
+
+
