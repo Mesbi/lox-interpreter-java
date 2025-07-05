@@ -11,13 +11,24 @@ public class GenerateAst {
         if (args.length != 1) {
             System.err.println("Usage: generate_ast <output directory>");
             System.exit(64);
+            String outputDir = args[0];
         }
         String outputDir = args[0];
         defineAst(outputDir, "Expr", Arrays.asList(
+            "Assign   : Token name, Expr value",
             "Binary   : Expr left, Token operator, Expr right",
             "Grouping : Expr expression",
             "Literal  : Object value",
             "Unary    : Token operator, Expr right"
+            "Variable : Token name"
+        ));
+          // NOVA chamada para gerar Stmt.java
+        defineAst(outputDir, "Stmt", Arrays.asList(
+            "Block      : List<Stmt> statements",
+            "Expression : Expr expression",
+            "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+            "Print      : Expr expression",
+            "Var        : Token name, Expr initializer"
         ));
     }
 
