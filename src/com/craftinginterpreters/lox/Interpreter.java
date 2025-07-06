@@ -1,36 +1,88 @@
 package com.lox;
 
-class Interpreter implements Expr.Visitor<Object> {
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment environment = new Environment(); // Começa com o ambiente global
 
     // Método principal que inicia a interpretação.
-    void interpret(Expr expression) {
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
     // Método que efetivamente dispara o mecanismo do Visitor.
-    private Object evaluate(Expr expr) {
-        return expr.accept(this);
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
     
-    // Converte o objeto resultado em uma string para exibição.
-    private String stringify(Object object) {
-        if (object == null) return "nil";
+      // Implemente os métodos 'visit' para DECLARAÇÕES.
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
 
-        // Lida com números Double para remover o ".0" de inteiros.
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
+    // Método auxiliar para executar um bloco em um novo escopo.
+    void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (Stmt statement : statements) {
+                execute(statement);
             }
-            return text;
+        } finally {
+            this.environment = previous; // Restaura o ambiente anterior
         }
+    }
 
-        return object.toString();
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression); // Avalia a expressão e descarta o resultado.
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    // Implemente os métodos 'visit' para as NOVAS EXPRESSÕES.
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr) {
+        Object value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return value;
+    }
+
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
     }
 
     // OS MÉTODOS 'visit...' VÊM AQUI...
