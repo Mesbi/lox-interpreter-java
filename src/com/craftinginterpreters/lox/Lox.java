@@ -53,12 +53,13 @@ private static void run(String source) {
 
         // 2. PARSER: Transforma os tokens em uma Árvore Sintática (AST).
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
-
-        // 3. VERIFICAÇÃO DE ERRO: Se o parser encontrou um erro, pare aqui.
+        //Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse(); // Agora retorna List<Stmt>
+    
+        // 3.Pare se houver um erro de sintaxe
         if (hadError) return;
-
-        interpreter.interpret(expression);
+        // A chamada ao interpretador agora passa a lista de declarações
+        interpreter.interpret(statements);
     }
        // Versão do erro para o Parser
 static void error(Token token, String message) {
