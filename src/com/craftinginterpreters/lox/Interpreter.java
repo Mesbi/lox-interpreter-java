@@ -1,5 +1,7 @@
 package com.lox;
 
+import java.util.List;
+
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment(); // Começa com o ambiente global
 
@@ -15,30 +17,18 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     // Método que efetivamente dispara o mecanismo do Visitor.
-    private void execute(Stmt stmt) {
+    /*private void execute(Stmt stmt) {
         stmt.accept(this);
     }
-    
-      // Implemente os métodos 'visit' para DECLARAÇÕES.
+    */
+// --- Implementações do Stmt.Visitor ---
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
         return null;
     }
 
-    // Método auxiliar para executar um bloco em um novo escopo.
-    void executeBlock(List<Stmt> statements, Environment environment) {
-        Environment previous = this.environment;
-        try {
-            this.environment = environment;
-            for (Stmt statement : statements) {
-                execute(statement);
-            }
-        } finally {
-            this.environment = previous; // Restaura o ambiente anterior
-        }
-    }
-
+    
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression); // Avalia a expressão e descarta o resultado.
@@ -71,8 +61,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         environment.define(stmt.name.lexeme, value);
         return null;
     }
-
-    // Implemente os métodos 'visit' para as NOVAS EXPRESSÕES.
+    // --- Implementações do Expr.Visitor ---
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
@@ -85,8 +74,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return environment.get(expr.name);
     }
 
-    // OS MÉTODOS 'visit...' VÊM AQUI...
-
 @Override
 public Object visitLiteralExpr(Expr.Literal expr) {
     // O valor de um literal é o próprio literal.
@@ -98,7 +85,6 @@ public Object visitGroupingExpr(Expr.Grouping expr) {
     // O valor de um agrupamento é o valor da expressão dentro dele.
     return evaluate(expr.expression);
 }
-
 
 @Override
 public Object visitUnaryExpr(Expr.Unary expr) {
@@ -117,14 +103,6 @@ public Object visitUnaryExpr(Expr.Unary expr) {
     // Inalcançável.
     return null;
 }
-
-// Lógica de "verdadeiro" ou "falso" do Lox: nil e false são falsos, todo o resto é verdadeiro.
-private boolean isTruthy(Object object) {
-    if (object == null) return false;
-    if (object instanceof Boolean) return (boolean)object;
-    return true;
-}
-
 
 @Override
 public Object visitBinaryExpr(Expr.Binary expr) {
@@ -180,8 +158,38 @@ public Object visitBinaryExpr(Expr.Binary expr) {
     // Inalcançável.
     return null;
 }
+ // --- Métodos Auxiliares ---
+private Object evaluate(Expr expr) {
+        return expr.accept(this);
+    }
 
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+
+        } finally {
+            this.environment = previous; // Restaura o ambiente anterior
+        }
+
+    }   
 // Compara dois objetos para igualdade, tratando nil.
+
+private boolean isTruthy(Object object) {
+
+    if (object == null) return false;
+
+    if (object instanceof Boolean) return (boolean)object;
+
+    return true;
+
+}
 private boolean isEqual(Object a, Object b) {
     if (a == null && b == null) return true;
     if (a == null) return false;
@@ -196,5 +204,16 @@ private boolean isEqual(Object a, Object b) {
     if (left instanceof Double && right instanceof Double) return;
     throw new RuntimeError(operator, "Operands must be numbers.");
 }
+    private String stringify(Object object) {
+        if (object == null) return "nil";
+        if (object instanceof Double) {
+            String text = object.toString();
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length() - 2);
+            }
+            return text;
+        }
+        return object.toString();
+    }
     
 }
