@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 
 public class Lox {
@@ -30,6 +30,7 @@ public class Lox {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70); //verificação para erros de execução 
     }
     // Executa o interpretador em modo interativo (REPL)
     private static void runPrompt() throws IOException {
@@ -41,8 +42,8 @@ public class Lox {
             String line = reader.readLine();
             if (line == null) break;
             run(line);
-            // Em modo interativo, não saímos se houver erro. Apenas resetamos a flag.
             hadError = false;
+            hadRuntimeError = false; // Também é bom resetar esta flag em modo interativo.
         }
     }
 
@@ -61,6 +62,7 @@ private static void run(String source) {
         // A chamada ao interpretador agora passa a lista de declarações
         interpreter.interpret(statements);
     }
+       // --- MÉTODOS DE RELATÓRIO DE ERRO ---
        // Versão do erro para o Parser
 static void error(Token token, String message) {
     if (token.type == TokenType.EOF) {
@@ -83,5 +85,5 @@ static void error(Token token, String message) {
         System.err.println(error.getMessage() +
         "\n[line " + error.token.line + "]");
         hadRuntimeError = true; 
-}
+    }
 }
