@@ -16,6 +16,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
+    // Adicione o mapa para as variáveis resolvidas.
+private final Map<Expr, Integer> locals = new HashMap<>();
+
+// Adicione este método para o Resolver chamar.
+void resolve(Expr expr, int depth) {
+    locals.put(expr, depth);
+}
+
     // Método que efetivamente dispara o mecanismo do Visitor.
     /*private void execute(Stmt stmt) {
         stmt.accept(this);
@@ -109,7 +117,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, expr.name.lexeme);
+        } else {
+            return globals.get(expr.name); //Assumindo que globalis é seu ambiente global.
+            
+            
+        ;
     }
 
 @Override
