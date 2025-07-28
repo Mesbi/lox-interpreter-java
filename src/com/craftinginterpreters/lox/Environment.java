@@ -32,6 +32,14 @@ class Environment {
         throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
     }
 
+    Object getAt(int distance, String name) {
+    Environment environment = this;
+    for (int i = 0; i < distance; i++) {
+        environment = environment.enclosing;
+    }
+    return environment.values.get(name);
+}
+
     // Atribui um novo valor a uma variável EXISTENTE.
     // Se não encontrar no escopo atual, procura no escopo pai.
     void assign(Token name, Object value) {
