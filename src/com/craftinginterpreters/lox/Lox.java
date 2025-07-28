@@ -59,6 +59,10 @@ private static void run(String source) {
     
         // 3.Pare se houver um erro de sintaxe
         if (hadError) return;
+
+        //4.RESOLVER
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);    
         // A chamada ao interpretador agora passa a lista de declarações
         interpreter.interpret(statements);
     }
